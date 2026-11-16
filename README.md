@@ -4,7 +4,7 @@
 [![version](https://img.shields.io/badge/version-0.1.0-blue)](CHANGELOG.md)
 [![license: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 ![dependencies: none](https://img.shields.io/badge/dependencies-none-brightgreen)
-![python 3.8+](https://img.shields.io/badge/python-3.8%2B-blue)
+![python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue)
 
 **A minimal project journal for Claude Code, on a hard token budget.**
 
@@ -57,7 +57,7 @@ Next: handle multi-line stack traces
 /plugin install claude-journal@claude-journal
 ```
 
-Requires Python 3.8+ on `PATH` (`python3` or `python`). Works on macOS, Linux and Windows (Git Bash, which Claude Code uses on Windows).
+Requires Python 3.9+ on `PATH` (`python3` or `python`). Works on macOS, Linux and Windows (Git Bash, which Claude Code uses on Windows).
 
 ## Use
 

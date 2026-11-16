@@ -19,7 +19,7 @@ Commands:
 
 Budgets can be changed with env vars: JOURNAL_STATE_MAX, JOURNAL_ENTRY_MAX,
 JOURNAL_INDEX_TAIL, JOURNAL_SAVE_MAX_KB. JOURNAL_GLOBAL_DIR sets the global dir.
-Standard library only, Python 3.8+.
+Standard library only, Python 3.9+.
 """
 import argparse
 import datetime as dt
