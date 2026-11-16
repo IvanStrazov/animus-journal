@@ -8,7 +8,7 @@ claude-journal exists to keep context cost small and predictable. A change that 
 
 ## Ground rules
 
-- Standard library only, Python 3.8+.
+- Standard library only, Python 3.9+.
 - Must work on macOS, Linux and Windows (Git Bash).
 - Journal files stay plain Markdown that a person can read and edit.
 - Keep `skills/journal/SKILL.md` short: it is loaded into context every time the skill is used.

@@ -12,6 +12,19 @@ ROOT = Path(__file__).resolve().parent.parent
 SCRIPT = ROOT / "scripts" / "journal.py"
 
 
+def find_bash():
+    """The shell Claude Code runs hooks in: bash, or Git Bash on Windows (not WSL's System32 bash.exe)."""
+    if os.name != "nt":
+        return shutil.which("bash")
+    git = shutil.which("git")
+    candidates = [Path(git).resolve().parent.parent / "bin" / "bash.exe"] if git else []
+    candidates.append(Path(os.environ.get("ProgramFiles", r"C:\Program Files")) / "Git" / "bin" / "bash.exe")
+    return next((str(c) for c in candidates if c.is_file()), None)
+
+
+BASH = find_bash()
+
+
 class JournalTest(unittest.TestCase):
     def setUp(self):
         self.tmp = Path(tempfile.mkdtemp())
@@ -110,14 +123,14 @@ class JournalTest(unittest.TestCase):
         self.assertNotEqual(r.returncode, 0)
         self.assertFalse((self.proj / ".journal" / "data" / "big.bin").exists())
 
-    @unittest.skipUnless(shutil.which("bash"), "bash not available")
+    @unittest.skipUnless(BASH, "bash not available")
     def test_hook_command_runs(self):
         hooks = json.loads((ROOT / "hooks" / "hooks.json").read_text(encoding="utf-8"))
         cmd = hooks["hooks"]["SessionStart"][0]["hooks"][0]["command"]
         env = dict(self.env, CLAUDE_PLUGIN_ROOT=ROOT.as_posix())
-        r = subprocess.run(["bash", "-c", cmd], input=json.dumps({"cwd": str(self.proj)}), cwd=str(self.proj),
-                           env=env, capture_output=True, text=True, encoding="utf-8")
-        self.assertEqual(r.returncode, 0, r.stderr)
+        r = subprocess.run([BASH, "-c", cmd], input=json.dumps({"cwd": str(self.proj)}), cwd=str(self.proj),
+                           env=env, capture_output=True, text=True, encoding="utf-8", errors="replace")
+        self.assertEqual(r.returncode, 0, f"bash={BASH}\nstdout={r.stdout}\nstderr={r.stderr}")
         self.assertIn("[journal] dir:", r.stdout)
 
 
