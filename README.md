@@ -1,5 +1,11 @@
 # claude-journal
 
+[![tests](https://github.com/IvanStrazov/claude-journal/actions/workflows/test.yml/badge.svg)](https://github.com/IvanStrazov/claude-journal/actions/workflows/test.yml)
+[![version](https://img.shields.io/badge/version-0.1.0-blue)](CHANGELOG.md)
+[![license: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+![dependencies: none](https://img.shields.io/badge/dependencies-none-brightgreen)
+![python 3.8+](https://img.shields.io/badge/python-3.8%2B-blue)
+
 **A minimal project journal for Claude Code, on a hard token budget.**
 
 Most memory plugins record everything and pay for it in context. claude-journal does the opposite: it keeps a short, human-readable journal and keeps the cost low with limits enforced in code, not just in the prompt.

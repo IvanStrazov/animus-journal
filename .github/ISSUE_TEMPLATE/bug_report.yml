@@ -1,0 +1,29 @@
+name: Bug report
+description: Something doesn't work as described
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected, what you got instead.
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: Output
+      description: The `[journal]` line from session start, or the command and its error. Remove anything private.
+      render: text
+  - type: input
+    id: os
+    attributes:
+      label: OS and shell
+      placeholder: "macOS 15 / zsh, Windows 11 / Git Bash, Ubuntu 24.04 / bash"
+    validations:
+      required: true
+  - type: input
+    id: versions
+    attributes:
+      label: Python and Claude Code versions
+      placeholder: "python 3.12.0, Claude Code 2.x"
