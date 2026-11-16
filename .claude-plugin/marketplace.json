@@ -9,7 +9,7 @@
       "name": "claude-journal",
       "source": "./",
       "description": "Minimal project journal with a hard token budget for Claude Code.",
-      "version": "0.1.0"
+      "version": "0.2.0"
     }
   ]
 }

@@ -16,9 +16,11 @@ Commands:
   tags                            tag counts
   save FILE [--data] [--name N]   copy a small file into scripts/ or data/
   where                           print the journal dir
+  link on|off                     link with claude-portrait via ~/.claude/ecosystem.json
 
 Budgets can be changed with env vars: JOURNAL_STATE_MAX, JOURNAL_ENTRY_MAX,
 JOURNAL_INDEX_TAIL, JOURNAL_SAVE_MAX_KB. JOURNAL_GLOBAL_DIR sets the global dir.
+CLAUDE_ECOSYSTEM_FILE moves the shared links file (default ~/.claude/ecosystem.json).
 Standard library only, Python 3.9+.
 """
 import argparse
@@ -46,6 +48,14 @@ INDEX_TAIL = _int_env("JOURNAL_INDEX_TAIL", 5)
 SAVE_MAX_BYTES = _int_env("JOURNAL_SAVE_MAX_KB", 1024) * 1024
 GLOBAL_DIR = Path(os.environ.get("JOURNAL_GLOBAL_DIR") or Path.home() / "journal").expanduser()
 SCRIPT = Path(__file__).resolve()
+CLAUDE_DIR = Path(os.environ.get("CLAUDE_CONFIG_DIR") or Path.home() / ".claude").expanduser()
+
+# Ecosystem: links with sibling plugins (shared file, same schema in each plugin).
+ECO_FILE = Path(os.environ.get("CLAUDE_ECOSYSTEM_FILE") or CLAUDE_DIR / "ecosystem.json").expanduser()
+SELF, PEER = "claude-journal", "claude-portrait"
+LINK = "+".join(sorted((SELF, PEER)))
+LINK_DEFAULTS = {"auto_sections": ["Projects", "Communication & preferences"],
+                 "digest_sections": ["Communication & preferences", "Who"], "digest_lines": 15}
 
 for _s in (sys.stdin, sys.stdout, sys.stderr):
     try:
@@ -106,6 +116,99 @@ def cap(lines, n, what):
     return lines
 
 
+def eco_load():
+    try:
+        e = json.loads(ECO_FILE.read_text(encoding="utf-8"))
+        if not isinstance(e, dict):
+            e = {}
+    except (OSError, ValueError):
+        e = {}
+    e.setdefault("version", 1)
+    e.setdefault("plugins", {})
+    e.setdefault("links", {})
+    return e
+
+
+def eco_write(e):
+    ECO_FILE.parent.mkdir(parents=True, exist_ok=True)
+    fd, tmp = tempfile.mkstemp(dir=str(ECO_FILE.parent), prefix=".tmp-")
+    with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as f:
+        f.write(json.dumps(e, ensure_ascii=False, indent=2) + "\n")
+    os.replace(tmp, ECO_FILE)
+
+
+def eco_register():
+    """Record where this plugin's script is, so sibling plugins can find it."""
+    e = eco_load()
+    me = {"cmd": f'"{sys.executable}" "{SCRIPT}"'}
+    if e["plugins"].get(SELF) != me:
+        e["plugins"][SELF] = me
+        try:
+            eco_write(e)
+        except OSError:
+            pass
+    return e
+
+
+def peer_installed(e):
+    return PEER in e["plugins"] or (CLAUDE_DIR / "plugins" / "cache" / PEER).is_dir()
+
+
+def portrait_digest(peer, link):
+    """Non-empty lines of the chosen portrait sections, in the chosen order, capped in total."""
+    names = [s.strip().lower() for s in link.get("digest_sections") or [] if s.strip()]
+    n = int(link.get("digest_lines") or 0)
+    if not names or n <= 0:
+        return []
+    try:
+        text = Path(peer.get("portrait_file", "")).read_text(encoding="utf-8")
+    except (OSError, ValueError):
+        return []
+    found, cur = {}, None
+    for line in text.splitlines():
+        if line.startswith("## "):
+            head = line[3:].strip().lower()
+            cur = next((s for s in names if head.startswith(s)), None)
+            if cur is not None:
+                found.setdefault(cur, [])
+        elif cur is not None and line.strip():
+            found[cur].append(line)
+    lines = [l for s in names for l in found.get(s, [])]
+    return lines[:n]
+
+
+def ecosystem_lines():
+    e = eco_register()
+    if not peer_installed(e):
+        return []
+    link = e["links"].get(LINK)
+    if link is None:
+        return [f"[journal] {PEER} is installed and not linked yet. Offer the link once via the "
+                "`portrait` skill (it shows digest sizes with their token cost)."]
+    if not link.get("enabled"):
+        return []
+    peer = e["plugins"].get(PEER) or {}
+    out = []
+    digest = portrait_digest(peer, link)
+    if digest:
+        out.append("About the user (from the portrait):")
+        out += digest
+    if peer.get("cmd"):
+        secs = ", ".join(link.get("auto_sections") or [])
+        out.append(f"[journal] portrait linked: P = {peer['cmd']}; at wrap-up update only: {secs}.")
+    return out
+
+
+def cmd_link(args):
+    e = eco_register()
+    link = dict(LINK_DEFAULTS, **(e["links"].get(LINK) or {}))
+    link["enabled"] = args.state == "on"
+    link["decided"] = dt.date.today().isoformat()
+    e["links"][LINK] = link
+    eco_write(e)
+    print(f"[journal] link {LINK}: {args.state}")
+
+
 def cmd_context(args):
     cwd = os.getcwd()
     try:
@@ -128,6 +231,10 @@ def cmd_context(args):
             out.append("Recent sessions:")
             out += idx[-INDEX_TAIL:]
         out.append("More: `find <tag|word>`. Record at wrap-up with the `journal` skill.")
+    try:
+        out += ecosystem_lines()
+    except Exception:
+        pass  # a broken shared file must never break session start
     print("\n".join(out))
 
 
@@ -214,6 +321,7 @@ def main():
     s = sp.add_parser("save"); s.add_argument("file"); s.add_argument("--data", action="store_true")
     s.add_argument("--name"); s.set_defaults(f=cmd_save)
     sp.add_parser("where").set_defaults(f=cmd_where)
+    k = sp.add_parser("link"); k.add_argument("state", choices=("on", "off")); k.set_defaults(f=cmd_link)
     args = ap.parse_args()
     args.f(args)
 

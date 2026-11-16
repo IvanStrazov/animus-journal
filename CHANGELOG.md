@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.0 — 2026-11-17
+
+- Link with [claude-portrait](https://github.com/IvanStrazov/claude-portrait) through a shared `~/.claude/ecosystem.json`, only after the user agrees (`link on|off`).
+- When linked: session start adds a short portrait digest (default: Communication + Who, ≤ 15 lines), and at wrap-up the journal updates only the portrait's Projects and Communication sections.
+- Unlinked or without claude-portrait, the output is unchanged apart from a one-line offer when claude-portrait is installed.
+
 ## 0.1.0 — 2026-11-16
 
 First release.

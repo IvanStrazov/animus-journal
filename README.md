@@ -1,7 +1,7 @@
 # claude-journal
 
 [![tests](https://github.com/IvanStrazov/claude-journal/actions/workflows/test.yml/badge.svg)](https://github.com/IvanStrazov/claude-journal/actions/workflows/test.yml)
-[![version](https://img.shields.io/badge/version-0.1.0-blue)](CHANGELOG.md)
+[![version](https://img.shields.io/badge/version-0.2.0-blue)](CHANGELOG.md)
 [![license: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 ![dependencies: none](https://img.shields.io/badge/dependencies-none-brightgreen)
 ![python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue)
@@ -67,7 +67,17 @@ You mostly don't have to do anything:
 - At the end of substantive work Claude records an entry and updates the snapshot. You can also ask: `/journal` or "write this to the journal".
 - Ask "what did we do on the parser?" — Claude runs `find parser`.
 
-Commands (Claude runs them; you can too): `add`, `state`, `find`, `tags`, `save`, `where` — see `python scripts/journal.py -h`.
+Commands (Claude runs them; you can too): `add`, `state`, `find`, `tags`, `save`, `where`, `link` — see `python scripts/journal.py -h`.
+
+## Works with claude-portrait (optional)
+
+If [claude-portrait](https://github.com/IvanStrazov/claude-portrait) is installed, the journal offers to link the two, once. Nothing changes until you agree (`journal.py link on`, or say yes in the `portrait` skill).
+
+When linked, the plugins share `~/.claude/ecosystem.json`:
+- **Session start** adds a short digest of your portrait (default: Communication + Who, ≤ 15 lines). `portrait.py digest-cost` shows what each size costs you with prompt caching.
+- **At wrap-up** the journal updates only the portrait's *Projects* and *Communication & preferences* sections from that session, and only when something changed. Sensitive topics are never touched.
+
+`journal.py link off` undoes it. A missing or broken `ecosystem.json` never breaks session start.
 
 ## How it compares
 

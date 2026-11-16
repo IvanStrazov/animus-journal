@@ -31,7 +31,9 @@ class JournalTest(unittest.TestCase):
         self.proj = self.tmp / "proj"
         self.proj.mkdir()
         self.global_dir = self.tmp / "global-journal"
-        self.env = dict(os.environ, JOURNAL_GLOBAL_DIR=str(self.global_dir), PYTHONIOENCODING="utf-8")
+        self.claude = self.tmp / "claude"
+        self.env = dict(os.environ, JOURNAL_GLOBAL_DIR=str(self.global_dir), PYTHONIOENCODING="utf-8",
+                        CLAUDE_CONFIG_DIR=str(self.claude))
 
     def tearDown(self):
         shutil.rmtree(self.tmp, ignore_errors=True)
@@ -122,6 +124,39 @@ class JournalTest(unittest.TestCase):
         r = self.run_j("save", str(big), "--data")
         self.assertNotEqual(r.returncode, 0)
         self.assertFalse((self.proj / ".journal" / "data" / "big.bin").exists())
+
+    def test_ecosystem_link_offer_and_digest(self):
+        ctx = lambda: self.run_j("context", stdin=json.dumps({"cwd": str(self.proj)})).stdout
+        self.assertNotIn("claude-portrait", ctx())  # portrait not installed: no offer
+        eco_file = self.claude / "ecosystem.json"
+        self.assertIn("journal.py", json.loads(eco_file.read_text(encoding="utf-8"))["plugins"]["claude-journal"]["cmd"])
+        portrait = self.tmp / "portrait.md"
+        portrait.write_text("# P\n## Who\n- dev\n## Projects\n- bot\n"
+                            "## Communication & preferences\n- Russian, direct\n- short answers\n",
+                            encoding="utf-8")
+        eco = json.loads(eco_file.read_text(encoding="utf-8"))
+        eco["plugins"]["claude-portrait"] = {"cmd": "py portrait.py", "portrait_file": str(portrait)}
+        eco_file.write_text(json.dumps(eco), encoding="utf-8")
+        self.assertIn("not linked yet", ctx())
+        self.assertEqual(self.run_j("link", "off").returncode, 0)
+        out = ctx()
+        self.assertNotIn("not linked yet", out)
+        self.assertNotIn("Russian", out)
+        self.run_j("link", "on")
+        out = ctx()
+        self.assertIn("- Russian, direct", out)
+        self.assertIn("- dev", out)          # default digest: Communication + Who
+        self.assertNotIn("- bot", out)       # Projects is not in the digest
+        self.assertLess(out.index("Russian"), out.index("- dev"))
+        self.assertIn("P = py portrait.py", out)
+        self.assertIn("Projects, Communication & preferences", out)
+
+    def test_broken_ecosystem_file_never_breaks_context(self):
+        self.claude.mkdir(parents=True, exist_ok=True)
+        (self.claude / "ecosystem.json").write_text("{not json", encoding="utf-8")
+        r = self.run_j("context", stdin=json.dumps({"cwd": str(self.proj)}))
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertIn("[journal] dir:", r.stdout)
 
     @unittest.skipUnless(BASH, "bash not available")
     def test_hook_command_runs(self):
