@@ -1,0 +1,15 @@
+{
+  "name": "claude-journal",
+  "owner": {
+    "name": "Ivan Strazov",
+    "url": "https://github.com/IvanStrazov"
+  },
+  "plugins": [
+    {
+      "name": "claude-journal",
+      "source": "./",
+      "description": "Minimal project journal with a hard token budget for Claude Code.",
+      "version": "0.1.0"
+    }
+  ]
+}
