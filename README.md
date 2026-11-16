@@ -2,8 +2,6 @@
 
 **A minimal project journal for Claude Code, on a hard token budget.**
 
-[Русская версия](README.ru.md)
-
 Most memory plugins record everything and pay for it in context. claude-journal does the opposite: it keeps a short, human-readable journal and keeps the cost low with limits enforced in code, not just in the prompt.
 
 - **≤ 40-line project snapshot** (`STATE.md`) + the last 5 session lines are injected at session start. That's all.
