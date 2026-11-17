@@ -33,7 +33,7 @@ EOF
 
 If the start-of-session context has a `[journal] portrait linked: P = …` line, then after `add`, and only if this session showed something new for them, update just the sections that line names (never sensitive topics, never other sections), from this session alone:
 `P show --section "<name>"`, then `P save --section "<name>"` with the whole merged section (≤ 20 lines). Skip it when nothing changed: that is the usual case.
-If the context says claude-portrait is installed and not linked yet, mention it once; the `portrait` skill sets the link up.
+If the context says animus-portrait is installed and not linked yet, mention it once; the `portrait` skill sets the link up.
 
 In a project, when the picture changed, rewrite the snapshot (≤ 40 lines, whole file):
 ```bash

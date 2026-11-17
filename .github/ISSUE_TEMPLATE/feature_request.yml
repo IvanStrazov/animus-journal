@@ -17,7 +17,7 @@ body:
     id: budget
     attributes:
       label: Effect on the token budget
-      description: claude-journal keeps context cost small. Would this add tokens at session start or a frequently firing hook?
+      description: animus-journal keeps context cost small. Would this add tokens at session start or a frequently firing hook?
       options:
         - "No effect"
         - "Adds a little (explain below)"

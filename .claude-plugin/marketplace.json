@@ -1,15 +1,15 @@
 {
-  "name": "claude-journal",
+  "name": "animus-journal",
   "owner": {
     "name": "Ivan Strazov",
     "url": "https://github.com/IvanStrazov"
   },
   "plugins": [
     {
-      "name": "claude-journal",
+      "name": "animus-journal",
       "source": "./",
       "description": "Minimal project journal with a hard token budget for Claude Code.",
-      "version": "0.2.0"
+      "version": "0.3.0"
     }
   ]
 }

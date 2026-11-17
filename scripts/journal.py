@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""claude-journal: a minimal, token-budgeted project journal for Claude Code.
+"""animus-journal: a minimal, token-budgeted project journal for Claude Code.
 
 Layout (in <project>/.journal/, or the global dir for sessions with no project):
   STATE.md          current project snapshot, overwritten, <= STATE_MAX lines
@@ -16,7 +16,7 @@ Commands:
   tags                            tag counts
   save FILE [--data] [--name N]   copy a small file into scripts/ or data/
   where                           print the journal dir
-  link on|off                     link with claude-portrait via ~/.claude/ecosystem.json
+  link on|off                     link with animus-portrait via ~/.claude/ecosystem.json
 
 Budgets can be changed with env vars: JOURNAL_STATE_MAX, JOURNAL_ENTRY_MAX,
 JOURNAL_INDEX_TAIL, JOURNAL_SAVE_MAX_KB. JOURNAL_GLOBAL_DIR sets the global dir.
@@ -52,8 +52,11 @@ CLAUDE_DIR = Path(os.environ.get("CLAUDE_CONFIG_DIR") or Path.home() / ".claude"
 
 # Ecosystem: links with sibling plugins (shared file, same schema in each plugin).
 ECO_FILE = Path(os.environ.get("CLAUDE_ECOSYSTEM_FILE") or CLAUDE_DIR / "ecosystem.json").expanduser()
-SELF, PEER = "claude-journal", "claude-portrait"
+SELF, PEER = "animus-journal", "animus-portrait"
 LINK = "+".join(sorted((SELF, PEER)))
+# Names before the Animus rename (<= 0.2.0); entries under them are migrated on load.
+LEGACY_NAMES = {"claude-journal": "animus-journal", "claude-portrait": "animus-portrait"}
+LEGACY_LINK = "claude-journal+claude-portrait"
 LINK_DEFAULTS = {"auto_sections": ["Projects", "Communication & preferences"],
                  "digest_sections": ["Communication & preferences", "Who"], "digest_lines": 15}
 
@@ -126,6 +129,11 @@ def eco_load():
     e.setdefault("version", 1)
     e.setdefault("plugins", {})
     e.setdefault("links", {})
+    for old, new in LEGACY_NAMES.items():
+        if old in e["plugins"]:
+            e["plugins"].setdefault(new, e["plugins"].pop(old))
+    if LEGACY_LINK in e["links"]:
+        e["links"].setdefault(LINK, e["links"].pop(LEGACY_LINK))
     return e
 
 
@@ -151,7 +159,9 @@ def eco_register():
 
 
 def peer_installed(e):
-    return PEER in e["plugins"] or (CLAUDE_DIR / "plugins" / "cache" / PEER).is_dir()
+    cache = CLAUDE_DIR / "plugins" / "cache"
+    old = [k for k, v in LEGACY_NAMES.items() if v == PEER]
+    return PEER in e["plugins"] or any((cache / n).is_dir() for n in [PEER] + old)
 
 
 def portrait_digest(peer, link):

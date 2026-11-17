@@ -4,7 +4,7 @@ Thanks for your interest! Issues and pull requests are welcome.
 
 ## The one rule: protect the token budget
 
-claude-journal exists to keep context cost small and predictable. A change that adds tokens at session start, adds a hook that fires often (on every tool call or prompt), or adds a runtime dependency needs a strong reason. Say in the PR how it affects the numbers in the README's token budget table.
+animus-journal exists to keep context cost small and predictable. A change that adds tokens at session start, adds a hook that fires often (on every tool call or prompt), or adds a runtime dependency needs a strong reason. Say in the PR how it affects the numbers in the README's token budget table.
 
 ## Ground rules
 
@@ -24,8 +24,8 @@ CI runs the same tests on Ubuntu, macOS and Windows.
 To try your working copy in Claude Code, add the local folder as a marketplace:
 
 ```
-/plugin marketplace add /path/to/claude-journal
-/plugin install claude-journal@claude-journal
+/plugin marketplace add /path/to/animus-journal
+/plugin install animus-journal@animus-journal
 ```
 
 ## Pull requests

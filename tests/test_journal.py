@@ -127,15 +127,15 @@ class JournalTest(unittest.TestCase):
 
     def test_ecosystem_link_offer_and_digest(self):
         ctx = lambda: self.run_j("context", stdin=json.dumps({"cwd": str(self.proj)})).stdout
-        self.assertNotIn("claude-portrait", ctx())  # portrait not installed: no offer
+        self.assertNotIn("animus-portrait", ctx())  # portrait not installed: no offer
         eco_file = self.claude / "ecosystem.json"
-        self.assertIn("journal.py", json.loads(eco_file.read_text(encoding="utf-8"))["plugins"]["claude-journal"]["cmd"])
+        self.assertIn("journal.py", json.loads(eco_file.read_text(encoding="utf-8"))["plugins"]["animus-journal"]["cmd"])
         portrait = self.tmp / "portrait.md"
         portrait.write_text("# P\n## Who\n- dev\n## Projects\n- bot\n"
                             "## Communication & preferences\n- Russian, direct\n- short answers\n",
                             encoding="utf-8")
         eco = json.loads(eco_file.read_text(encoding="utf-8"))
-        eco["plugins"]["claude-portrait"] = {"cmd": "py portrait.py", "portrait_file": str(portrait)}
+        eco["plugins"]["animus-portrait"] = {"cmd": "py portrait.py", "portrait_file": str(portrait)}
         eco_file.write_text(json.dumps(eco), encoding="utf-8")
         self.assertIn("not linked yet", ctx())
         self.assertEqual(self.run_j("link", "off").returncode, 0)
@@ -168,6 +168,22 @@ class JournalTest(unittest.TestCase):
         self.assertEqual(r.returncode, 0, f"bash={BASH}\nstdout={r.stdout}\nstderr={r.stderr}")
         self.assertIn("[journal] dir:", r.stdout)
 
+
+    def test_legacy_ecosystem_names_are_migrated(self):
+        self.claude.mkdir(parents=True, exist_ok=True)
+        portrait = self.tmp / "portrait.md"
+        portrait.write_text("## Communication & preferences\n- legacy digest line\n", encoding="utf-8")
+        legacy = {"plugins": {"claude-portrait": {"cmd": "py portrait.py", "portrait_file": str(portrait)}},
+                  "links": {"claude-journal+claude-portrait": {
+                      "enabled": True, "digest_sections": ["Communication & preferences"], "digest_lines": 5,
+                      "auto_sections": ["Projects"]}}}
+        (self.claude / "ecosystem.json").write_text(json.dumps(legacy), encoding="utf-8")
+        out = self.run_j("context", stdin=json.dumps({"cwd": str(self.proj)})).stdout
+        self.assertIn("- legacy digest line", out)
+        self.assertIn("P = py portrait.py", out)
+        eco = json.loads((self.claude / "ecosystem.json").read_text(encoding="utf-8"))
+        self.assertIn("animus-journal+animus-portrait", eco["links"])
+        self.assertNotIn("claude-portrait", eco["plugins"])
 
 if __name__ == "__main__":
     unittest.main()

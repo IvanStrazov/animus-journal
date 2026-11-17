@@ -1,10 +1,16 @@
 # Changelog
 
+## 0.3.0 — 2026-11-17
+
+- Renamed to **animus-journal**, part of the [Animus](https://github.com/IvanStrazov/animus-portrait#animus) ecosystem (was claude-journal). New repository: `IvanStrazov/animus-journal` (the old `IvanStrazov/claude-journal` stays as 0.2.0).
+- To upgrade from 0.2.0: `/plugin marketplace add IvanStrazov/animus-journal`, then `/plugin install animus-journal@animus-journal`, then remove `claude-journal`. Your journals are untouched.
+- The shared `~/.claude/ecosystem.json` is migrated automatically: an existing link with the portrait carries over.
+
 ## 0.2.0 — 2026-11-17
 
-- Link with [claude-portrait](https://github.com/IvanStrazov/claude-portrait) through a shared `~/.claude/ecosystem.json`, only after the user agrees (`link on|off`).
+- Link with [animus-portrait](https://github.com/IvanStrazov/animus-portrait) through a shared `~/.claude/ecosystem.json`, only after the user agrees (`link on|off`).
 - When linked: session start adds a short portrait digest (default: Communication + Who, ≤ 15 lines), and at wrap-up the journal updates only the portrait's Projects and Communication sections.
-- Unlinked or without claude-portrait, the output is unchanged apart from a one-line offer when claude-portrait is installed.
+- Unlinked or without animus-portrait, the output is unchanged apart from a one-line offer when animus-portrait is installed.
 
 ## 0.1.0 — 2026-11-16
 

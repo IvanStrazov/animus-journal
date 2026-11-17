@@ -1,14 +1,16 @@
-# claude-journal
+# animus-journal
 
-[![tests](https://github.com/IvanStrazov/claude-journal/actions/workflows/test.yml/badge.svg)](https://github.com/IvanStrazov/claude-journal/actions/workflows/test.yml)
-[![version](https://img.shields.io/badge/version-0.2.0-blue)](CHANGELOG.md)
+[![tests](https://github.com/IvanStrazov/animus-journal/actions/workflows/test.yml/badge.svg)](https://github.com/IvanStrazov/animus-journal/actions/workflows/test.yml)
+[![version](https://img.shields.io/badge/version-0.3.0-blue)](CHANGELOG.md)
 [![license: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 ![dependencies: none](https://img.shields.io/badge/dependencies-none-brightgreen)
 ![python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue)
 
 **A minimal project journal for Claude Code, on a hard token budget.**
 
-Most memory plugins record everything and pay for it in context. claude-journal does the opposite: it keeps a short, human-readable journal and keeps the cost low with limits enforced in code, not just in the prompt.
+> **Part of Animus** — small, local, token-frugal plugins that let Claude Code remember you and your work: [animus-journal](https://github.com/IvanStrazov/animus-journal) (what was done) and [animus-portrait](https://github.com/IvanStrazov/animus-portrait) (who you are). Each works alone; linked, they share context through `~/.claude/ecosystem.json`. The name nods to the memory machine from Assassin's Creed and to the Latin *animus*, "mind". Not affiliated with Ubisoft.
+
+Most memory plugins record everything and pay for it in context. animus-journal does the opposite: it keeps a short, human-readable journal and keeps the cost low with limits enforced in code, not just in the prompt.
 
 - **≤ 40-line project snapshot** (`STATE.md`) + the last 5 session lines are injected at session start. That's all.
 - **≤ 20 lines per session entry**, written at wrap-up in a single shell call.
@@ -53,8 +55,8 @@ Next: handle multi-line stack traces
 ## Install
 
 ```
-/plugin marketplace add IvanStrazov/claude-journal
-/plugin install claude-journal@claude-journal
+/plugin marketplace add IvanStrazov/animus-journal
+/plugin install animus-journal@animus-journal
 ```
 
 Requires Python 3.9+ on `PATH` (`python3` or `python`). Works on macOS, Linux and Windows (Git Bash, which Claude Code uses on Windows).
@@ -69,9 +71,9 @@ You mostly don't have to do anything:
 
 Commands (Claude runs them; you can too): `add`, `state`, `find`, `tags`, `save`, `where`, `link` — see `python scripts/journal.py -h`.
 
-## Works with claude-portrait (optional)
+## Works with animus-portrait (optional)
 
-If [claude-portrait](https://github.com/IvanStrazov/claude-portrait) is installed, the journal offers to link the two, once. Nothing changes until you agree (`journal.py link on`, or say yes in the `portrait` skill).
+If [animus-portrait](https://github.com/IvanStrazov/animus-portrait) is installed, the journal offers to link the two, once. Nothing changes until you agree (`journal.py link on`, or say yes in the `portrait` skill).
 
 When linked, the plugins share `~/.claude/ecosystem.json`:
 - **Session start** adds a short digest of your portrait (default: Communication + Who, ≤ 15 lines). `portrait.py digest-cost` shows what each size costs you with prompt caching.
@@ -81,7 +83,7 @@ When linked, the plugins share `~/.claude/ecosystem.json`:
 
 ## How it compares
 
-If you want automatic capture of every action with semantic search, use a full memory system such as claude-mem. claude-journal is for people who want a small, readable log they control, with a predictable and low context cost.
+If you want automatic capture of every action with semantic search, use a full memory system such as claude-mem. animus-journal is for people who want a small, readable log they control, with a predictable and low context cost.
 
 ## License
 
