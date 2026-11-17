@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.4.5 — 2026-11-17
+- Skill: Russian trigger phrases; scoped to one task (the cross-project overview is brief).
+
 ## 0.4.4 — 2026-11-17
 - Running a command from inside a journal folder (e.g. `~/journal/data`) now uses that journal instead of creating a nested `.journal`.
 - `amend` without `--body` says when text on stdin was ignored.

@@ -1,6 +1,6 @@
 ---
 name: journal
-description: Minimal project journal with a hard token budget — record what a session did and the project's current state, keep small helper scripts/data with the project, and look up past work by task tag. Use at wrap-up of substantive work, on /journal or "write this to the journal", or when asked what was done earlier on a task.
+description: Minimal project journal with a hard token budget — record what a session did and the project's current state, keep small helper scripts/data with the project, and look up past work on one task by its tag. Use at wrap-up of substantive work, on /journal, "write this to the journal", "what did we do on X", or in Russian — «запиши в журнал», «занеси в журнал», «что мы делали по X», «когда мы это чинили». For an overview across all projects, use brief instead.
 ---
 
 # Journal
