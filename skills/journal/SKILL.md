@@ -30,10 +30,11 @@ EOF
 - ≤ 20 lines, facts only: no logs, no code, no retelling the conversation. Omit empty fields.
 - 1–3 lowercase kebab tags; reuse existing ones (`J tags`). The first tag is the task slug — the key for `find`.
 - In `~/journal/` the first tag names the topic.
+- To fix the newest entry (typo, wrong tag, missing fact): `J amend --title "…"` / `--tags a,b` / `--body` (new body from stdin). Older entries are history: add a new entry instead of rewriting them. To see an entry, use `J find`, never grep/cat the log.
 
 If the start-of-session context has a `[journal] portrait linked: P = …` line, then after `add`, and only if this session showed something new for them, update just the sections that line names (never sensitive topics, never other sections), from this session alone:
 `P show --section "<name>"`, then `P save --section "<name>"` with the whole merged section (≤ 20 lines). Skip it when nothing changed: that is the usual case.
-If the context says animus-portrait is installed and not linked yet, mention it once; the `portrait` skill sets the link up.
+If the context says animus-portrait is installed and not linked yet, mention it once, in one short line at the end of a wrap-up reply (not in the middle of a task); the `portrait` skill sets the link up.
 
 In a project, when the picture changed, rewrite the snapshot (≤ 40 lines, whole file):
 ```bash

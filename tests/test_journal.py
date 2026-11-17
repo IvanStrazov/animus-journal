@@ -57,6 +57,26 @@ class JournalTest(unittest.TestCase):
         self.assertEqual(len(logs), 1)
         self.assertIn("#task-a #api — First", logs[0].read_text(encoding="utf-8"))
 
+    def test_amend_last_entry_updates_log_and_index(self):
+        self.add("First", "task-a", "Done: one")
+        self.add("Secnod tpyo", "task-b,api", "Done: two")
+        r = self.run_j("amend", "--title", "Second, fixed")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        j = self.proj / ".journal"
+        log = next((j / "log").glob("*.md")).read_text(encoding="utf-8")
+        self.assertIn("#task-b #api — Second, fixed\nDone: two", log)
+        self.assertIn("#task-a — First\nDone: one", log)
+        self.assertNotIn("tpyo", log)
+        idx = (j / "INDEX.md").read_text(encoding="utf-8")
+        self.assertIn("| #task-b #api | Second, fixed", idx)
+        self.assertNotIn("tpyo", idx)
+        r = self.run_j("amend", "--tags", "task-c", "--body", stdin="Done: rewritten")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        log = next((j / "log").glob("*.md")).read_text(encoding="utf-8")
+        self.assertIn("#task-c — Second, fixed\nDone: rewritten", log)
+        self.assertNotIn("Done: two", log)
+        self.assertIn("| #task-c | Second, fixed", (j / "INDEX.md").read_text(encoding="utf-8"))
+
     def test_entry_is_capped(self):
         r = self.add("Long", "t", "\n".join(f"line {i}" for i in range(50)))
         self.assertIn("trimmed to 20", r.stderr)

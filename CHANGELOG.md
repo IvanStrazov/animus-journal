@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.0 — 2026-11-17
+- New `amend [--title T] [--tags a,b] [--body]`: fix the newest entry; the log section and its INDEX line change together (no more hand edits that leave INDEX stale).
+- Skill: older entries are history (add a new one instead of rewriting); look at entries with `find`, never grep/cat the log; the portrait-link hint is one short line at the end of a wrap-up.
+
 ## 0.3.1 — 2026-11-17
 
 - Fix: project paths with non-ASCII characters (e.g. Cyrillic) were mis-decoded on Windows, so the journal could resolve to the wrong folder.

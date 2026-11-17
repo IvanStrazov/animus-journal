@@ -11,6 +11,7 @@ Layout (in <project>/.journal/, or the global dir for sessions with no project):
 Commands:
   context                         SessionStart hook: print STATE + last index lines
   add --title T [--tags a,b]      entry body from stdin -> log + INDEX
+  amend [--title T] [--tags a,b] [--body]   fix the LAST entry (log + INDEX); --body: new body from stdin
   state                           stdin -> STATE.md
   find TERM... [--n N] [--all]    matching entries, newest first
   tags                            tag counts
@@ -265,6 +266,44 @@ def cmd_add(args):
     print(f"[journal] entry added -> {log}")
 
 
+def cmd_amend(args):
+    """Fix the newest entry: title, tags and/or body. Rewrites that one section and its INDEX line."""
+    j = journal_dir(os.getcwd())
+    logs = sorted((j / "log").glob("*.md")) if (j / "log").is_dir() else []
+    if not logs:
+        sys.exit("[journal] nothing to amend")
+    log = logs[-1]
+    secs = re.split(r"(?m)^(?=## )", read(log))
+    i = max((k for k, s in enumerate(secs) if s.startswith("## ")), default=None)
+    if i is None:
+        sys.exit("[journal] nothing to amend")
+    head, _, rest = secs[i].partition("\n")
+    m = re.match(r"## (\d{4}-\d{2}-\d{2} \d{2}:\d{2})((?: #\S+)*)(?: —)? ?(.*)$", head.strip())
+    if not m:
+        sys.exit(f"[journal] cannot parse the last entry header: {head!r}")
+    when, old_tags, old_title = m.group(1), m.group(2).strip(), m.group(3).strip()
+    tags = old_tags if args.tags is None else " ".join(
+        "#" + t.strip().lstrip("#") for t in args.tags.split(",") if t.strip())
+    title = old_title if args.title is None else " ".join(args.title.split())
+    body = rest.rstrip("\n")
+    if args.body:
+        body = "\n".join(cap([l.rstrip() for l in sys.stdin.read().strip().splitlines()], ENTRY_MAX, "entry"))
+    if args.title is None and args.tags is None and not args.body:
+        sys.exit("[journal] nothing to change: pass --title, --tags or --body")
+    trail = "\n" if i < len(secs) - 1 else ""
+    secs[i] = " ".join(x for x in (f"## {when}", tags, "—", title) if x) + "\n" + body + "\n" + trail
+    log.write_text("".join(secs), encoding="utf-8")
+    idx_f = j / "INDEX.md"
+    idx = read(idx_f).splitlines()
+    old_line = f"{when[:10]} | {old_tags or '-'} | {old_title}"
+    k = max((n for n, l in enumerate(idx) if l.strip() == old_line), default=len(idx) - 1 if idx else None)
+    if k is not None and k >= 0:
+        idx[k] = f"{when[:10]} | {tags or '-'} | {title}"
+        idx_f.write_text("\n".join(idx) + "\n", encoding="utf-8")
+    print(f"[journal] last entry amended -> {log}")
+    print(" ".join(x for x in (f"## {when}", tags, "—", title) if x))
+
+
 def cmd_state(args):
     j = ensure(journal_dir(os.getcwd()))
     lines = cap(sys.stdin.read().strip().splitlines(), STATE_MAX, "STATE")
@@ -324,6 +363,8 @@ def main():
     sp.add_parser("context").set_defaults(f=cmd_context)
     a = sp.add_parser("add"); a.add_argument("--title", required=True); a.add_argument("--tags")
     a.set_defaults(f=cmd_add)
+    m = sp.add_parser("amend"); m.add_argument("--title"); m.add_argument("--tags")
+    m.add_argument("--body", action="store_true"); m.set_defaults(f=cmd_amend)
     sp.add_parser("state").set_defaults(f=cmd_state)
     f = sp.add_parser("find"); f.add_argument("terms", nargs="+"); f.add_argument("--n", type=int, default=3)
     f.add_argument("--all", action="store_true"); f.set_defaults(f=cmd_find)
