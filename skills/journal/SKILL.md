@@ -31,6 +31,7 @@ EOF
 - ≤ 20 lines, facts only: no logs, no code, no retelling the conversation. Omit empty fields.
 - 1–3 lowercase kebab tags; reuse existing ones (`J tags`). The first tag is the task slug — the key for `find`.
 - In `~/journal/` the first tag names the topic.
+- A session that worked on two unrelated tasks gets one entry per task (each with its own task slug).
 - To fix the newest entry (typo, wrong tag, missing fact): `J amend --title "…"` / `--tags a,b` / `--body` (new body from stdin), combined into one call. Older entries are history: add a new entry instead of rewriting them. To see an entry, use `J find`, never grep/cat the log.
 
 If the start-of-session context has a `[journal] portrait linked: P = …` line, then after `add`, and only if this session showed something new for them, update just the sections that line names (never sensitive topics, never other sections), from this session alone:
@@ -49,7 +50,7 @@ Next steps: ...
 Key files: path — role
 EOF
 ```
-STATE is a snapshot, not history: drop finished or obsolete items.
+STATE is a snapshot, not history: keep `Goal:` always, drop finished or obsolete items. To show the current STATE to the user, run `J context` (it prints STATE and the latest entries).
 
 ## Keeping files
 Reusable helper scripts or small data (≤ 1 MB) made during work, e.g. in a scratch/temp dir:

@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.4.2 — 2026-11-17
+- Skill: a session with two unrelated tasks gets one entry per task; STATE always keeps `Goal:`; `context` shows the current STATE.
+
 ## 0.4.1 — 2026-11-17
 - Skill: paste the `cmd:` in front of the subcommand (a shell variable breaks the two quoted parts).
 - Skill: answer "where is the journal / what is in it" with `where` and the layout, not by opening files; there is no delete — don't offer to clean up entries.
