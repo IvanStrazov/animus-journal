@@ -194,8 +194,9 @@ def ecosystem_lines():
         return []
     link = e["links"].get(LINK)
     if link is None:
-        return [f"[journal] {PEER} is installed and not linked yet. Offer the link once via the "
-                "`portrait` skill (it shows digest sizes with their token cost)."]
+        return [f"[journal] {PEER} is installed and not linked yet. Mention it once, in one "
+                "line, at the end of a reply where you recorded a journal entry (never in Q&A); the `portrait` "
+                "skill sets the link up."]
     if not link.get("enabled"):
         return []
     peer = e["plugins"].get(PEER) or {}

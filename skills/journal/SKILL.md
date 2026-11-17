@@ -7,14 +7,14 @@ description: Minimal project journal with a hard token budget — record what a 
 
 All reads and writes go through one script. Never Read/Edit journal files directly — that is what costs tokens.
 
-`J` below = the `cmd:` shown in the `[journal]` line injected at session start (an interpreter + `journal.py` path). Paste it as is in front of the subcommand, e.g. `"C:\…\python.exe" "C:\…\journal.py" find auth` — don't put it into a shell variable (the two quoted parts break). If that line is missing, the script is `scripts/journal.py` in this plugin's root.
+`J` below = the `cmd:` shown in the `[journal]` line injected at session start (an interpreter + `journal.py` path). Paste it as is in front of the subcommand, e.g. `"C:\…\python.exe" "C:\…\journal.py" find auth` — don't put it into a shell variable (the two quoted parts break). If that line is missing, take the `animus-journal` `cmd` from `~/.claude/ecosystem.json`; failing that, the script is `scripts/journal.py` in this plugin's root (`python` + forward slashes on Windows).
 
 Location is automatic: `<project root>/.journal/` (git root, else cwd), or `~/journal/` for sessions with no project (home dir, temp dir, throwaway workspaces). The journal ships its own `.gitignore` (`*`), so it is never committed. When the user asks where the journal is or what is in it, `J where` prints the folder; describe the layout from this paragraph (`log/` by month, `INDEX.md`, `STATE.md`, `scripts/`, `data/`) instead of listing or opening the files.
 There is no delete: entries are history. Don't offer to delete or "clean up" entries; if one is wrong, `amend` it (newest only) or add a correcting entry.
 
 ## Starting work
 The SessionStart hook already injected STATE.md + the last 5 index lines. Don't re-read them.
-To recall a task: `J find <tag or word> [more words]` → the 3 newest matching entries (`--n N`, `--all`). `J tags` lists tags cheaply. Use `--all` only when asked.
+To recall a task: `J find <tag or word> [more words]` → the 3 newest matching entries, printed exactly as stored (`--n N`, `--all`). If the user doubts it, say that this is the stored text — don't open the log to "double-check". `J tags` lists tags cheaply. Use `--all` only when asked.
 
 ## Recording (at wrap-up, one Bash call)
 Only when the session did real work: files changed, something configured or set up, a problem solved or diagnosed, a decision made. Skip quick Q&A and explanations. When unsure, ask the user in one line whether to record it.

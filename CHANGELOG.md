@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.3 — 2026-11-17
+- The session-start hint about linking animus-portrait now says: once, in one line, after recording an entry (never in Q&A).
+- Skill: `find` prints entries exactly as stored, no need to open the log; fallback to the `cmd` in ecosystem.json when the start-of-session line is missing.
+
 ## 0.4.2 — 2026-11-17
 - Skill: a session with two unrelated tasks gets one entry per task; STATE always keeps `Goal:`; `context` shows the current STATE.
 
