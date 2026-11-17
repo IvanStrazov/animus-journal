@@ -87,7 +87,7 @@ def project_root(cwd: str):
         return None
     try:
         top = subprocess.run(["git", "-C", str(p), "rev-parse", "--show-toplevel"],
-                             capture_output=True, text=True, timeout=5).stdout.strip()
+                             capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=5).stdout.strip()
         if top:
             return Path(top)
     except Exception:

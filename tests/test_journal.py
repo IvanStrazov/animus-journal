@@ -158,6 +158,15 @@ class JournalTest(unittest.TestCase):
         self.assertEqual(r.returncode, 0, r.stderr)
         self.assertIn("[journal] dir:", r.stdout)
 
+    def test_non_ascii_git_root(self):
+        if not shutil.which("git"):
+            self.skipTest("git not available")
+        proj = self.tmp / "Проект по умолчанию" / "bot"
+        proj.mkdir(parents=True)
+        subprocess.run(["git", "init", "-q", str(proj.parent)], capture_output=True)
+        out = self.run_j("where", cwd=proj).stdout.strip()
+        self.assertEqual(Path(out).resolve(), (proj.parent / ".journal").resolve())
+
     @unittest.skipUnless(BASH, "bash not available")
     def test_hook_command_runs(self):
         hooks = json.loads((ROOT / "hooks" / "hooks.json").read_text(encoding="utf-8"))

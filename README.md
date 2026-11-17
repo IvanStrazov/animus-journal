@@ -1,14 +1,25 @@
 # animus-journal
 
 [![tests](https://github.com/IvanStrazov/animus-journal/actions/workflows/test.yml/badge.svg)](https://github.com/IvanStrazov/animus-journal/actions/workflows/test.yml)
-[![version](https://img.shields.io/badge/version-0.3.0-blue)](CHANGELOG.md)
+[![version](https://img.shields.io/badge/version-0.3.1-blue)](CHANGELOG.md)
 [![license: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 ![dependencies: none](https://img.shields.io/badge/dependencies-none-brightgreen)
 ![python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue)
 
 **A minimal project journal for Claude Code, on a hard token budget.**
 
-> **Part of Animus** — small, local, token-frugal plugins that let Claude Code remember you and your work: [animus-journal](https://github.com/IvanStrazov/animus-journal) (what was done) and [animus-portrait](https://github.com/IvanStrazov/animus-portrait) (who you are). Each works alone; linked, they share context through `~/.claude/ecosystem.json`. The name nods to the memory machine from Assassin's Creed and to the Latin *animus*, "mind". Not affiliated with Ubisoft.
+> **Part of Animus** — small, local, token-frugal plugins that let Claude Code remember you and your work. Each works alone; together they share context through `~/.claude/ecosystem.json`.
+>
+> | Plugin | What it does |
+> |---|---|
+> | [animus-journal](https://github.com/IvanStrazov/animus-journal) | Project journal on a hard token budget: what was done, decided, next |
+> | [animus-portrait](https://github.com/IvanStrazov/animus-portrait) | A compact portrait of you, built from your own sessions |
+> | [animus-brief](https://github.com/IvanStrazov/animus-brief) | One status brief across all your projects |
+> | [animus-limits](https://github.com/IvanStrazov/animus-limits) | Token spend per task, per-task limits, cost estimates |
+> | [animus-relay](https://github.com/IvanStrazov/animus-relay) | Hand work over to a fresh session without losing the thread |
+> | [animus-review](https://github.com/IvanStrazov/animus-review) | Send work to another model for review, triage the answer |
+>
+> The name nods to the memory machine from Assassin's Creed and to the Latin *animus*, "mind". Not affiliated with Ubisoft.
 
 Most memory plugins record everything and pay for it in context. animus-journal does the opposite: it keeps a short, human-readable journal and keeps the cost low with limits enforced in code, not just in the prompt.
 

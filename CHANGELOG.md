@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.1 — 2026-11-17
+
+- Fix: project paths with non-ASCII characters (e.g. Cyrillic) were mis-decoded on Windows, so the journal could resolve to the wrong folder.
+
 ## 0.3.0 — 2026-11-17
 
 - Renamed to **animus-journal**, part of the [Animus](https://github.com/IvanStrazov/animus-portrait#animus) ecosystem (was claude-journal). New repository: `IvanStrazov/animus-journal` (the old `IvanStrazov/claude-journal` stays as 0.2.0).
