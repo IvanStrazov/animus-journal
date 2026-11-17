@@ -96,7 +96,26 @@ def project_root(cwd: str):
     return p
 
 
+def _inside_journal(cwd):
+    """A folder inside a journal (~/journal/... or <project>/.journal/...) belongs to that journal,
+    so running a command from there never creates a nested .journal."""
+    try:
+        p = Path(cwd).resolve()
+        g = GLOBAL_DIR.resolve()
+    except (OSError, RuntimeError):
+        return None
+    if p == g or g in p.parents:
+        return GLOBAL_DIR
+    for q in (p, *p.parents):
+        if q.name == ".journal":
+            return q
+    return None
+
+
 def journal_dir(cwd: str) -> Path:
+    _j = _inside_journal(cwd)
+    if _j is not None:
+        return _j
     root = project_root(cwd)
     return GLOBAL_DIR if root is None else root / ".journal"
 
@@ -289,6 +308,12 @@ def cmd_amend(args):
     body = rest.rstrip("\n")
     if args.body:
         body = "\n".join(cap([l.rstrip() for l in sys.stdin.read().strip().splitlines()], ENTRY_MAX, "entry"))
+    if not args.body and not sys.stdin.isatty():
+        try:
+            if sys.stdin.read().strip():
+                print("[journal] note: text on stdin was ignored - pass --body to replace the body")
+        except (OSError, ValueError):
+            pass
     if args.title is None and args.tags is None and not args.body:
         sys.exit("[journal] nothing to change: pass --title, --tags or --body")
     trail = "\n" if i < len(secs) - 1 else ""

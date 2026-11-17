@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.4 — 2026-11-17
+- Running a command from inside a journal folder (e.g. `~/journal/data`) now uses that journal instead of creating a nested `.journal`.
+- `amend` without `--body` says when text on stdin was ignored.
+- Skill: no placeholder entry on "start recording"; entries and STATE in the user's language; ask for an unknown goal; files go in via `save`, never rm inside a journal.
+
 ## 0.4.3 — 2026-11-17
 - The session-start hint about linking animus-portrait now says: once, in one line, after recording an entry (never in Q&A).
 - Skill: `find` prints entries exactly as stored, no need to open the log; fallback to the `cmd` in ecosystem.json when the start-of-session line is missing.

@@ -77,6 +77,15 @@ class JournalTest(unittest.TestCase):
         self.assertNotIn("Done: two", log)
         self.assertIn("| #task-c | Second, fixed", (j / "INDEX.md").read_text(encoding="utf-8"))
 
+    def test_no_nested_journal_inside_a_journal(self):
+        self.add("First", "task-a", "Done: one")
+        inner = self.proj / ".journal" / "data"
+        inner.mkdir(parents=True, exist_ok=True)
+        r = self.run_j("add", "--title", "From inside", "--tags", "task-a", stdin="Done: two", cwd=inner)
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertFalse((inner / ".journal").exists())
+        self.assertIn("From inside", (self.proj / ".journal" / "INDEX.md").read_text(encoding="utf-8"))
+
     def test_entry_is_capped(self):
         r = self.add("Long", "t", "\n".join(f"line {i}" for i in range(50)))
         self.assertIn("trimmed to 20", r.stderr)
