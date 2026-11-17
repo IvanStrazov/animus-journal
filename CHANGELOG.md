@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.1 — 2026-11-17
+- Skill: paste the `cmd:` in front of the subcommand (a shell variable breaks the two quoted parts).
+- Skill: answer "where is the journal / what is in it" with `where` and the layout, not by opening files; there is no delete — don't offer to clean up entries.
+- Skill: clearer "real work" rule for recording; one `amend` call; the portrait hint only after an entry was recorded.
+
 ## 0.4.0 — 2026-11-17
 - New `amend [--title T] [--tags a,b] [--body]`: fix the newest entry; the log section and its INDEX line change together (no more hand edits that leave INDEX stale).
 - Skill: older entries are history (add a new one instead of rewriting); look at entries with `find`, never grep/cat the log; the portrait-link hint is one short line at the end of a wrap-up.

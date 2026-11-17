@@ -7,16 +7,17 @@ description: Minimal project journal with a hard token budget — record what a 
 
 All reads and writes go through one script. Never Read/Edit journal files directly — that is what costs tokens.
 
-`J` below = the `cmd:` shown in the `[journal]` line injected at session start (an interpreter + `journal.py` path). If that line is missing, the script is `scripts/journal.py` in this plugin's root.
+`J` below = the `cmd:` shown in the `[journal]` line injected at session start (an interpreter + `journal.py` path). Paste it as is in front of the subcommand, e.g. `"C:\…\python.exe" "C:\…\journal.py" find auth` — don't put it into a shell variable (the two quoted parts break). If that line is missing, the script is `scripts/journal.py` in this plugin's root.
 
-Location is automatic: `<project root>/.journal/` (git root, else cwd), or `~/journal/` for sessions with no project (home dir, temp dir, throwaway workspaces). The journal ships its own `.gitignore` (`*`), so it is never committed.
+Location is automatic: `<project root>/.journal/` (git root, else cwd), or `~/journal/` for sessions with no project (home dir, temp dir, throwaway workspaces). The journal ships its own `.gitignore` (`*`), so it is never committed. When the user asks where the journal is or what is in it, `J where` prints the folder; describe the layout from this paragraph (`log/` by month, `INDEX.md`, `STATE.md`, `scripts/`, `data/`) instead of listing or opening the files.
+There is no delete: entries are history. Don't offer to delete or "clean up" entries; if one is wrong, `amend` it (newest only) or add a correcting entry.
 
 ## Starting work
 The SessionStart hook already injected STATE.md + the last 5 index lines. Don't re-read them.
 To recall a task: `J find <tag or word> [more words]` → the 3 newest matching entries (`--n N`, `--all`). `J tags` lists tags cheaply. Use `--all` only when asked.
 
 ## Recording (at wrap-up, one Bash call)
-Only when the session did real work (changes, decisions, findings). Skip quick Q&A.
+Only when the session did real work: files changed, something configured or set up, a problem solved or diagnosed, a decision made. Skip quick Q&A and explanations. When unsure, ask the user in one line whether to record it.
 
 ```bash
 J add --title "Short result-oriented title" --tags task-slug,area <<'EOF'
@@ -30,11 +31,11 @@ EOF
 - ≤ 20 lines, facts only: no logs, no code, no retelling the conversation. Omit empty fields.
 - 1–3 lowercase kebab tags; reuse existing ones (`J tags`). The first tag is the task slug — the key for `find`.
 - In `~/journal/` the first tag names the topic.
-- To fix the newest entry (typo, wrong tag, missing fact): `J amend --title "…"` / `--tags a,b` / `--body` (new body from stdin). Older entries are history: add a new entry instead of rewriting them. To see an entry, use `J find`, never grep/cat the log.
+- To fix the newest entry (typo, wrong tag, missing fact): `J amend --title "…"` / `--tags a,b` / `--body` (new body from stdin), combined into one call. Older entries are history: add a new entry instead of rewriting them. To see an entry, use `J find`, never grep/cat the log.
 
 If the start-of-session context has a `[journal] portrait linked: P = …` line, then after `add`, and only if this session showed something new for them, update just the sections that line names (never sensitive topics, never other sections), from this session alone:
 `P show --section "<name>"`, then `P save --section "<name>"` with the whole merged section (≤ 20 lines). Skip it when nothing changed: that is the usual case.
-If the context says animus-portrait is installed and not linked yet, mention it once, in one short line at the end of a wrap-up reply (not in the middle of a task); the `portrait` skill sets the link up.
+If the context says animus-portrait is installed and not linked yet, mention it once, in one short line at the end of the reply in which you recorded an entry (never in Q&A sessions or mid-task); the `portrait` skill sets the link up.
 
 In a project, when the picture changed, rewrite the snapshot (≤ 40 lines, whole file):
 ```bash

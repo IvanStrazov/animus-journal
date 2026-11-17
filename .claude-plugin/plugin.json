@@ -1,6 +1,6 @@
 {
   "name": "animus-journal",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Minimal project journal with a hard token budget: a ≤40-line state snapshot at session start, ≤20-line session entries, lookup by task tag. One stdlib Python file, plain Markdown, no database, no background process.",
   "author": {
     "name": "Ivan Strazov",
