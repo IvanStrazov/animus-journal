@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.0 — 2026-11-19
+- Records without being asked: the skill now writes after each milestone (commit, push, release, verified fix, decision) and at wrap-up; later records on the same task amend the newest entry.
+- New `Stop` hook (`journal.py stop`): silent unless the session did work since the last `add`/`amend`/`skip` (any git commit/push or `gh pr/release create`, or 3+ file edits outside the journal and memory), then asks Claude to record it. Never loops (`stop_hook_active`), never breaks a turn. `JOURNAL_NUDGE_EDITS` sets the edit threshold, `0` turns it off.
+- New `skip` command: "looked, nothing worth recording" — quiets the reminder until new work.
+
 ## 0.4.5 — 2026-11-17
 - Skill: Russian trigger phrases; scoped to one task (the cross-project overview is brief).
 

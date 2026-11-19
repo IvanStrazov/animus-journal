@@ -24,9 +24,9 @@
 Most memory plugins record everything and pay for it in context. animus-journal does the opposite: it keeps a short, human-readable journal and keeps the cost low with limits enforced in code, not just in the prompt.
 
 - **≤ 40-line project snapshot** (`STATE.md`) + the last 5 session lines are injected at session start. That's all.
-- **≤ 20 lines per session entry**, written at wrap-up in a single shell call.
+- **≤ 20 lines per session entry**, written in a single shell call after milestones and at wrap-up — without you having to ask.
 - **Lookup by task tag**: `find <tag>` returns only the 3 newest matching entries, not the whole history.
-- **No hooks on every tool call or prompt.** One `SessionStart` hook, nothing else.
+- **No hooks on every tool call or prompt.** A `SessionStart` hook injects the context; a `Stop` hook stays silent unless the session did work (a commit/push, or 3+ file edits) since the last record, and then asks Claude to record it. `JOURNAL_NUDGE_EDITS=0` turns the reminder off.
 - **One stdlib Python file + plain Markdown.** No database, no vector store, no background process, no network, no extra model calls.
 
 ## Token budget (measured)
@@ -38,7 +38,7 @@ Most memory plugins record everything and pay for it in context. animus-journal 
 | Recalling a task | 3 matching entries | ≈ 200–1 000 tokens |
 | Skill instructions | loaded only when the skill is used | ~2.4 KB ≈ 600 tokens |
 
-Limits can be changed with environment variables: `JOURNAL_STATE_MAX`, `JOURNAL_ENTRY_MAX`, `JOURNAL_INDEX_TAIL`, `JOURNAL_SAVE_MAX_KB`.
+Limits can be changed with environment variables: `JOURNAL_STATE_MAX`, `JOURNAL_ENTRY_MAX`, `JOURNAL_INDEX_TAIL`, `JOURNAL_SAVE_MAX_KB`, `JOURNAL_NUDGE_EDITS` (edits that trigger the Stop reminder, default 3, `0` = off).
 
 ## What it stores
 

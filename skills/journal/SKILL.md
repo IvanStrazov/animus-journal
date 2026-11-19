@@ -1,6 +1,6 @@
 ---
 name: journal
-description: Minimal project journal with a hard token budget — record what a session did and the project's current state, keep small helper scripts/data with the project, and look up past work on one task by its tag. Use at wrap-up of substantive work, on /journal, "write this to the journal", "what did we do on X", or in Russian — «запиши в журнал», «занеси в журнал», «что мы делали по X», «когда мы это чинили». For an overview across all projects, use brief instead.
+description: Minimal project journal with a hard token budget — record what a session did and the project's current state, keep small helper scripts/data with the project, and look up past work on one task by its tag. Use proactively, without being asked — right after a milestone (commit, push, release, a verified fix, a decision) and at wrap-up of substantive work — and on /journal, "write this to the journal", "what did we do on X", or in Russian — «запиши в журнал», «занеси в журнал», «что мы делали по X», «когда мы это чинили». For an overview across all projects, use brief instead.
 ---
 
 # Journal
@@ -16,8 +16,11 @@ There is no delete: entries are history. Never rm anything inside a journal fold
 The SessionStart hook already injected STATE.md + the last 5 index lines. Don't re-read them.
 To recall a task: `J find <tag or word> [more words]` → the 3 newest matching entries, printed exactly as stored (`--n N`, `--all`). If the user doubts it, say that this is the stored text — don't open the log to "double-check". `J tags` lists tags cheaply. Use `--all` only when asked.
 
-## Recording (at wrap-up, one Bash call)
-Only when the session did real work: files changed, something configured or set up, a problem solved or diagnosed, a decision made. Skip quick Q&A and explanations. When unsure, ask the user in one line whether to record it. If the user says "start recording" at the beginning, don't write a placeholder entry: say you will record at wrap-up. Write entries and STATE in the user's language (field labels like `Done:` stay as they are). If the project goal is not known, ask instead of inventing one.
+## Recording (after milestones and at wrap-up, one Bash call each)
+Record on your own initiative — the user often forgets to ask at the end. Do it right after a milestone (commit, push, release, a fix verified, a decision made) and again at wrap-up if more happened since. Only for real work: files changed, something configured or set up, a problem solved or diagnosed, a decision made. Skip quick Q&A and explanations; when unsure, record a short entry rather than asking.
+Later records in the same session on the same task: `J amend --body` the newest entry with the merged facts instead of adding near-duplicates; a different task gets its own `add`.
+A Stop hook (`J stop`) checks each finished turn: if work since the last `add`/`amend`/`skip` is unrecorded, it asks you to record it. Then record (or `J skip` when it really is not worth recording) and close with one short line — don't repeat the answer.
+If the user says "start recording" at the beginning, don't write a placeholder entry: say you will record after the first milestone. Write entries and STATE in the user's language (field labels like `Done:` stay as they are). If the project goal is not known, ask instead of inventing one.
 
 ```bash
 J add --title "Short result-oriented title" --tags task-slug,area <<'EOF'

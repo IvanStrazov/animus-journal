@@ -18,9 +18,13 @@ Commands:
   save FILE [--data] [--name N]   copy a small file into scripts/ or data/
   where                           print the journal dir
   link on|off                     link with animus-portrait via ~/.claude/ecosystem.json
+  stop                            Stop hook: remind to record when work since the last record is unrecorded
+  skip                            mark "looked, nothing worth recording" (silences `stop` until new work)
 
 Budgets can be changed with env vars: JOURNAL_STATE_MAX, JOURNAL_ENTRY_MAX,
 JOURNAL_INDEX_TAIL, JOURNAL_SAVE_MAX_KB. JOURNAL_GLOBAL_DIR sets the global dir.
+JOURNAL_NUDGE_EDITS: file edits since the last record that trigger the Stop reminder (default 3, 0 = off);
+any git commit/push or gh pr/release create triggers it regardless.
 CLAUDE_ECOSYSTEM_FILE moves the shared links file (default ~/.claude/ecosystem.json).
 Standard library only, Python 3.9+.
 """
@@ -47,6 +51,7 @@ STATE_MAX = _int_env("JOURNAL_STATE_MAX", 40)
 ENTRY_MAX = _int_env("JOURNAL_ENTRY_MAX", 20)
 INDEX_TAIL = _int_env("JOURNAL_INDEX_TAIL", 5)
 SAVE_MAX_BYTES = _int_env("JOURNAL_SAVE_MAX_KB", 1024) * 1024
+NUDGE_EDITS = _int_env("JOURNAL_NUDGE_EDITS", 3)
 GLOBAL_DIR = Path(os.environ.get("JOURNAL_GLOBAL_DIR") or Path.home() / "journal").expanduser()
 SCRIPT = Path(__file__).resolve()
 CLAUDE_DIR = Path(os.environ.get("CLAUDE_CONFIG_DIR") or Path.home() / ".claude").expanduser()
@@ -252,7 +257,7 @@ def cmd_context(args):
     cmd = f'"{sys.executable}" "{SCRIPT}"'
     out = [f"[journal] dir: {j}  cmd: {cmd}"]
     if not j.exists():
-        out.append("No journal here yet. Record substantive work at wrap-up with the `journal` skill.")
+        out.append("No journal here yet. Record substantive work with the `journal` skill after milestones and at wrap-up, without being asked.")
     else:
         state = read(j / "STATE.md").strip()
         if state and not is_global:
@@ -261,7 +266,7 @@ def cmd_context(args):
         if idx:
             out.append("Recent sessions:")
             out += idx[-INDEX_TAIL:]
-        out.append("More: `find <tag|word>`. Record at wrap-up with the `journal` skill.")
+        out.append("More: `find <tag|word>`. Record with the `journal` skill after milestones and at wrap-up, without being asked.")
     try:
         out += ecosystem_lines()
     except Exception:
@@ -379,6 +384,70 @@ def cmd_save(args):
     print(f"[journal] saved -> {dest}")
 
 
+EDIT_TOOLS = {"Edit", "Write", "MultiEdit", "NotebookEdit"}
+SHELL_TOOLS = {"Bash", "PowerShell"}
+RE_MILESTONE = re.compile(r"\bgit\b[^\n|;&]*?\s(commit|push)\b|\bgh\s+(pr\s+create|release\s+create)\b")
+RE_RECORD = re.compile(r"journal\.py[\"']?\s+(add|amend|skip)\b")
+
+
+def _not_work(path):
+    """Edits that are bookkeeping, not work: the journal itself and Claude's memory files."""
+    p = "/" + str(path or "").replace("\\", "/").lower()
+    return "/.journal/" in p or "/memory/" in p or p.endswith("/memory.md")
+
+
+def unrecorded_work(transcript):
+    """(file edits, commits/pushes) after the last journal add/amend/skip in a session transcript (JSONL)."""
+    edits = milestones = 0
+    with open(transcript, encoding="utf-8", errors="replace") as f:
+        for line in f:
+            if '"tool_use"' not in line:
+                continue
+            try:
+                rec = json.loads(line)
+            except ValueError:
+                continue
+            content = (rec.get("message") or {}).get("content")
+            for c in content if isinstance(content, list) else ():
+                if not isinstance(c, dict) or c.get("type") != "tool_use":
+                    continue
+                name, inp = c.get("name"), c.get("input") or {}
+                if name in SHELL_TOOLS:
+                    cmd = str(inp.get("command") or "")
+                    if RE_RECORD.search(cmd):
+                        edits = milestones = 0
+                    elif RE_MILESTONE.search(cmd):
+                        milestones += 1
+                elif name in EDIT_TOOLS and not _not_work(inp.get("file_path") or inp.get("notebook_path")):
+                    edits += 1
+    return edits, milestones
+
+
+def cmd_stop(args):
+    """Stop hook. Silent unless this session did work since its last record; then asks Claude to record it."""
+    try:
+        data = json.loads(sys.stdin.read() or "{}")
+        if NUDGE_EDITS <= 0 or data.get("stop_hook_active") or not data.get("transcript_path"):
+            return
+        edits, milestones = unrecorded_work(data["transcript_path"])
+    except Exception:
+        return  # a reminder must never break a turn
+    if milestones == 0 and edits < NUDGE_EDITS:
+        return
+    cmd = f'"{sys.executable}" "{SCRIPT}"'
+    what = ", ".join(x for x in ("commits/pushes" if milestones else "",
+                                 f"{edits} file edits" if edits else "") if x)
+    reason = (f"[journal] Work since the last journal record is not recorded yet ({what}). "
+              f"Record it now with the `journal` skill, without asking: `{cmd} add ...`, or `{cmd} amend --body` "
+              f"when the newest entry is this same task from this session and only needs the new facts. "
+              f"If it is not worth recording, run `{cmd} skip`. Then end with one short line; don't repeat your answer.")
+    print(json.dumps({"decision": "block", "reason": reason}, ensure_ascii=False))
+
+
+def cmd_skip(args):
+    print("[journal] not recorded; the reminder stays quiet until new work.")
+
+
 def cmd_where(args):
     print(journal_dir(os.getcwd()))
 
@@ -398,6 +467,8 @@ def main():
     s = sp.add_parser("save"); s.add_argument("file"); s.add_argument("--data", action="store_true")
     s.add_argument("--name"); s.set_defaults(f=cmd_save)
     sp.add_parser("where").set_defaults(f=cmd_where)
+    sp.add_parser("stop").set_defaults(f=cmd_stop)
+    sp.add_parser("skip").set_defaults(f=cmd_skip)
     k = sp.add_parser("link"); k.add_argument("state", choices=("on", "off")); k.set_defaults(f=cmd_link)
     args = ap.parse_args()
     args.f(args)

@@ -206,6 +206,59 @@ class JournalTest(unittest.TestCase):
         self.assertEqual(r.returncode, 0, f"bash={BASH}\nstdout={r.stdout}\nstderr={r.stderr}")
         self.assertIn("[journal] dir:", r.stdout)
 
+    def transcript(self, *tool_uses):
+        t = self.tmp / "t.jsonl"
+        lines = [json.dumps({"type": "user", "message": {"role": "user", "content": "hi"}})]
+        for name, inp in tool_uses:
+            lines.append(json.dumps({"type": "assistant", "message": {"role": "assistant", "content": [
+                {"type": "tool_use", "id": "x", "name": name, "input": inp}]}}))
+        t.write_text("\n".join(lines) + "\n", encoding="utf-8")
+        return t
+
+    def stop(self, t, **extra):
+        r = self.run_j("stop", stdin=json.dumps(dict({"transcript_path": str(t), "cwd": str(self.proj)}, **extra)))
+        self.assertEqual(r.returncode, 0, r.stderr)
+        return json.loads(r.stdout) if r.stdout.strip() else None
+
+    def test_stop_silent_without_work(self):
+        t = self.transcript(("Read", {"file_path": "a.py"}), ("Bash", {"command": "git status"}),
+                            ("Edit", {"file_path": "a.py"}))
+        self.assertIsNone(self.stop(t))
+
+    def test_stop_nudges_after_commit_and_edits(self):
+        out = self.stop(self.transcript(("Bash", {"command": "git add -A && git -C repo commit -m x"})))
+        self.assertEqual(out["decision"], "block")
+        self.assertIn("journal.py", out["reason"])
+        edits = [("Edit", {"file_path": f"f{i}.py"}) for i in range(3)]
+        self.assertEqual(self.stop(self.transcript(*edits))["decision"], "block")
+
+    def test_stop_quiet_after_record_until_new_work(self):
+        work = ("Bash", {"command": "git push origin main"})
+        rec = ("Bash", {"command": '"py" "/x/journal.py" add --title T <<EOF\nDone: git commit\nEOF'})
+        self.assertIsNone(self.stop(self.transcript(work, rec)))
+        self.assertIsNone(self.stop(self.transcript(work, ("Bash", {"command": "py journal.py skip"}))))
+        self.assertIsNotNone(self.stop(self.transcript(work, rec, work)))
+
+    def test_stop_ignores_journal_and_memory_edits_and_loops(self):
+        t = self.transcript(*[("Write", {"file_path": p}) for p in
+                              ("C:\\p\\.journal\\x.md", "/home/u/.claude/projects/p/memory/a.md", "MEMORY.md")])
+        self.assertIsNone(self.stop(t))
+        busy = self.transcript(("Bash", {"command": "git commit -m x"}))
+        self.assertIsNone(self.stop(busy, stop_hook_active=True))
+        self.assertIsNone(self.run_j("stop", stdin="not json").stdout.strip() or None)
+        off = dict(self.env, JOURNAL_NUDGE_EDITS="0")
+        r = self.run_j("stop", stdin=json.dumps({"transcript_path": str(busy)}), env=off)
+        self.assertEqual(r.stdout.strip(), "")
+
+    def test_stop_hook_command_runs(self):
+        hooks = json.loads((ROOT / "hooks" / "hooks.json").read_text(encoding="utf-8"))
+        cmd = hooks["hooks"]["Stop"][0]["hooks"][0]["command"]
+        env = dict(self.env, CLAUDE_PLUGIN_ROOT=ROOT.as_posix())
+        t = self.transcript(("Bash", {"command": "git commit -m x"}))
+        r = subprocess.run([BASH, "-c", cmd], input=json.dumps({"transcript_path": str(t)}), cwd=str(self.proj),
+                           env=env, capture_output=True, text=True, encoding="utf-8", errors="replace")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertEqual(json.loads(r.stdout)["decision"], "block")
 
     def test_legacy_ecosystem_names_are_migrated(self):
         self.claude.mkdir(parents=True, exist_ok=True)
